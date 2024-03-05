@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+    <h1>Add Car for Lender ID: {{ lender_id }}</h1>
+    <form method="POST" action="/add_car">
+        <input type="hidden" name="lender_id" value="{{ lender_id }}">
+        <label for="license">Enter License:</label><br>
+        <input type="text" id="license" name="license"><br>
+        <label for="location">Enter Location:</label><br>
+        <input type="text" id="location" name="location"><br>
+        <label for="price">Enter Price:</label><br>
+        <input type="number" id="price" name="price"><br>
+        <input class="submit" type="submit" value="Submit">
+    </form>
+</body>
+
+</html>

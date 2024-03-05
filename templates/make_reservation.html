@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+    <h1>Make Reservation for Customer ID: {{ customer_id }}</h1>
+    <form method="POST" action="/make_reservation">
+        <input type="hidden" name="customer_id" value="{{ customer_id }}">
+        <label for="license">Enter License:</label><br>
+        <input type="text" id="license" name="license"><br>
+        <label for="amount">Enter Amount:</label><br>
+        <input type="number" id="amount" name="amount"><br>
+        <label for="start_date">Start Date:</label>
+        <input type="date" id="start_date" name="start_date"><br>
+        <label for="end_date">End Date:</label>
+        <input type="date" id="end_date" name="end_date">
+        <input class="submit" type="submit" value="Submit">
+    </form>
+</body>
+
+</html>
