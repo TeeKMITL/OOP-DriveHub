@@ -28,7 +28,7 @@ class WebsiteController:
     @property
     def car_list(self):
         return self.__car_list
-    
+
     def add_reservation(self,user,car,amount,start_date,end_date):
         temp = start_date.split("/")
         date1 = date(int(float(temp[2])),int(temp[1]),int(temp[0]))
@@ -63,21 +63,22 @@ class WebsiteController:
                     if lenders == cars.owner:
                         self.car_list.remove(cars)
     def check_available_car(self, location, start_date, end_date):
+        unavailable = False
         available_car = []
         temp = start_date.split("/")
         start = DMY(int(temp[0]),int(temp[1]),int(temp[2]))
         temp = end_date.split("/")
         end = DMY(int(temp[0]),int(temp[1]),int(temp[2]))
-
         for car in self.car_list:
             if car.location == location:
                 if car.status == "AVAILABLE":
                     for date in car.unavailable_dates:
                         if date.year == start.year and date.month == start.month:
                             if date.day >= start.day and date.day <= end.day:
+                                unavailable = True
                                 break
-                        else:
-                            available_car.append(car)
+                    if not unavailable:
+                        available_car.append(car)
         return available_car
     
 class Reservation:
@@ -210,6 +211,10 @@ class DMY:
 site = WebsiteController()
 me = site.add_lender(123,"Tee","0649494466","1234")
 me1 = site.add_customer(124,"Eet","012345678","1234")
+# mycar = me.lend_car("AVAILABLE","AB123","HOME",100)
+# site.car_list.append(mycar)
+# site.add_reservation(me1,mycar,100,"1/1/1","5/1/1")
+# print(site.check_available_car("HOME","1/1/1","2/2/2"))
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -219,7 +224,7 @@ def get_all_customer():
     return {"Customers": {index: str(obj) for index, obj in enumerate(site.customer_list)}}
 
 @app.get("/api/lender", tags=["API"])
-def get_all_customer():
+def get_all_lender():
     return {"Lenders": {index: str(obj) for index, obj in enumerate(site.lender_list)}}
 
 @app.get("/customer/{customer_id}/home", tags =["Customer"])
@@ -234,29 +239,25 @@ def get_all_reservations_page(customer_id:int) -> dict:
             return {"Reservations": {index: str(obj) for index, obj in enumerate(temp)}}
     return {"Error":"Error"}
 
+@app.get("/customer/{customer_id}/find_car", tags = ["Customer"])
+def find_car_page(request:Request,customer_id: int):
+    return templates.TemplateResponse("find_car.html", {"request":request, "customer_id": customer_id})
+
 @app.get("/customer/{customer_id}/make_reservation", tags = ["Customer"])
 def make_reservation_page(request: Request,customer_id:int):
     return templates.TemplateResponse("make_reservation.html", {"request": request, "customer_id": customer_id})
 
-def add_reservation(self,user,car,amount,start_date,end_date):
-        temp = start_date.split("/")
-        date1 = date(int(temp[2]),int(temp[1]),int(temp[0]))
-        temp = end_date.split("/")
-        date2 = date(int(temp[2]),int(temp[1]),int(temp[0]))
-        delta = date2-date1
-        for i in range(delta.days + 1):
-            a = date1 + timedelta(days=i)
-            b = str(a)
-            splitted = b.split("-")
-            r_date = DMY(int(splitted[2]),int(splitted[1]),int(splitted[0]))
-            car.unavailable_dates.append(r_date)
-        reserve = Reservation(user,car,amount,start_date,end_date)
-        self.reservation_list.append(reserve)
-        user.add_reservation(reserve)
-        return reserve
+@app.post("/find_car")
+async def find_car_post(request:Request, customer_id:int = Form(...), location:str = Form(...), start_date:date = Form(...), end_date:date = Form(...)):
+    start = str(start_date).split("-")
+    end = str(end_date).split("-")
+    new_start = f"{start[2]}/{start[1]}/{start[0]}"
+    new_end = f"{end[2]}/{end[1]}/{end[0]}"
+    temp = site.check_available_car(location,new_start,new_end)
+    return {"Available Car(s)" : {index: {"Car License": obj.license, "Price": obj.price} for index, obj in enumerate(temp)}}
 
 @app.post("/make_reservation")
-async def make_reservation(request: Request, customer_id:int = Form(...), license:str = Form(...), amount:int=Form(...),start_date:date = Form(...), end_date:date = Form(...)):
+async def make_reservation_post(request: Request, customer_id:int = Form(...), license:str = Form(...), amount:int=Form(...),start_date:date = Form(...), end_date:date = Form(...)):
     for customers in site.customer_list:
         if customers.id == customer_id:
             for cars in site.car_list:
@@ -289,7 +290,7 @@ def car_list(lender_id:int) -> dict:
     for lenders in site.lender_list:
         if lenders.id == lender_id:
             temp = lenders.lent_cars
-            return {"Lent Cars": {index: {"license": obj.license, "status": obj.status, "price":obj.price} for index, obj in enumerate(temp)}}
+            return {"Lent Cars": {index: {"license": obj.license, "status": obj.status, "price":obj.price, "location":obj.location} for index, obj in enumerate(temp)}}
     return {"Error"}
 
 @app.post("/get_car_unavailable_dates", tags = ["Lender"])
