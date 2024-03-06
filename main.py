@@ -207,32 +207,9 @@ class DMY:
     def year(self):
         return self.__year
 
-#####TEST CODE START
-
-# # zeroday = DMY(0,0,0)
 site = WebsiteController()
 me = site.add_lender(123,"Tee","0649494466","1234")
 me1 = site.add_customer(124,"Eet","012345678","1234")
-# # print(me.LentCars)
-# mycar = me.lent_cars[0]
-# # mycar.unavailable_dates.append(zeroday)
-# # print(mycar.Status)
-# # me.UpdateCarStatus("NOT LENT",mycar)
-# # print(mycar.Status)
-# site.add_reservation(me1,mycar,1000,"1/1/1","3/1/1")
-# # print(mycar.unavailable_dates)
-# # for i in site.reservation_list:
-# #     print(i.user)
-# for i in mycar.unavailable_dates:
-#     # print(i.day)
-#     # print(i.month)
-#     # print(i.year)
-#     print(i)
-# print(site.check_available_car("BACK_HOME","1/1/1","3/1/1"))
-# # print(get_all_reservations())
-
-####TEST CODE END
-# return {"Reservations":dict(list(enumerate(temp)))}
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
